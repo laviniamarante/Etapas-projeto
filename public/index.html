@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lista de Itens</title>
+  <style>
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f6f9fc;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 15px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      padding: 30px 25px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      color: #196909; /* Azul forte do SUAP */
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 600;
+      font-size: 1.8rem;
+    }
+
+    button, input[type="submit"] {
+      background-color: #196909;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover, input[type="submit"]:hover {
+      background-color:#196909;
+    }
+
+    #loadItemsBtn {
+      display: block;
+      margin: 0 auto 20px auto;
+      width: 160px;
+    }
+
+    ul {
+      list-style-type: none;
+      margin-bottom: 25px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 12px 18px;
+      background: #f9fbfd;
+    }
+
+    ul li {
+      padding: 8px 6px;
+      border-bottom: 1px solid #ddd;
+      font-size: 1rem;
+    }
+
+    ul li:last-child {
+      border-bottom: none;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #196909;
+      box-shadow: 0 0 4px #196909;
+    }
+
+    /* Scrollbar simples para a lista */
+    ul::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ul::-webkit-scrollbar-thumb {
+      background-color: #196909;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Minha Lista de Itens</h1>
+
+    <button id="loadItemsBtn">Carregar Itens</button>
+
+    <ul id="itemsList"></ul>
+
+    <form id="addItemForm">
+      <input
+        type="text"
+        id="newItemInput"
+        placeholder="Digite um novo item"
+        required
+        autocomplete="off"
+      />
+      <input type="submit" value="Adicionar" />
+    </form>
+  </div>
+
+  <script>
+    const btnLoadItems = document.getElementById('loadItemsBtn');
+    const itemsList = document.getElementById('itemsList');
+    const formAddItem = document.getElementById('addItemForm');
+    const inputNewItem = document.getElementById('newItemInput');
+
+    // Busca os itens da API e mostra na lista
+    async function loadItems() {
+      try {
+        const res = await fetch('/items');
+        if (!res.ok) throw new Error('Erro ao carregar itens');
+        const items = await res.json();
+
+        itemsList.innerHTML = '';
+        items.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item.item || item;
+          itemsList.appendChild(li);
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Evento botão carregar itens
+    btnLoadItems.addEventListener('click', loadItems);
+
+    // Evento do formulário para adicionar item
+    formAddItem.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const newItem = inputNewItem.value.trim();
+      if (!newItem) return;
+
+      try {
+        const res = await fetch('/items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item: newItem }),
+        });
+        if (!res.ok) throw new Error('Erro ao adicionar item');
+
+        inputNewItem.value = '';
+        await loadItems();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  </script>
+</body>
+</html>
